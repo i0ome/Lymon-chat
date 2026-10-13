@@ -1373,14 +1373,7 @@ class _VoiceBubbleState extends State<_VoiceBubble> {
           } else if (_player.state == PlayerState.paused) {
             await _player.resume();
           } else {
-            await _player.play(UrlSource(widget.url));
-          }
-        },
-      ),
-      const Text('🎤 رسالة صوتية'),
-    ]);
-  }
-}
+            await
 
 ===== FILE: android/app/src/main/AndroidManifest.xml (أضف فقط هذي الأسطر) =====
 <!-- داخل <manifest> وقبل <application> -->
