@@ -1,1100 +1,1410 @@
-===== FILE: settings.gradle.kts =====
-pluginManagement {
-    repositories { google(); mavenCentral(); gradlePluginPortal() }
-}
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories { google(); mavenCentral() }
-}
-rootProject.name = "LymonChat"
-include(":app")
+===== FILE: pubspec.yaml =====
+name: lymon_chat
+description: Lymon chat
+publish_to: "none"
+version: 1.0.0+1
 
-===== FILE: build.gradle.kts =====
-plugins {
-    id("com.android.application") version "8.5.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.24" apply false
-    id("com.google.gms.google-services") version "4.4.2" apply false
-}
+environment:
+  sdk: ">=3.3.0 <4.0.0"
 
-===== FILE: gradle.properties =====
-org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
-android.useAndroidX=true
-kotlin.code.style=official
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^3.4.0
+  firebase_auth: ^5.2.0
+  cloud_firestore: ^5.3.0
+  firebase_storage: ^12.2.0
+  google_sign_in: ^6.2.1
+  image_picker: ^1.1.2
+  file_picker: ^8.1.2
+  record: ^5.1.2
+  audioplayers: ^6.1.0
+  path_provider: ^2.1.4
+  url_launcher: ^6.3.0
 
-===== FILE: app/build.gradle.kts =====
-plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("com.google.gms.google-services")
-}
+flutter:
+  uses-material-design: true
 
-android {
-    namespace = "com.lymon.chat"
-    compileSdk = 34
-    defaultConfig {
-        applicationId = "com.lymon.chat"
-        minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
-    }
-    buildTypes { release { isMinifyEnabled = false } }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions { jvmTarget = "17" }
-    buildFeatures { compose = true }
-    composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
-}
+===== FILE: lib/main.dart =====
+import 'dart:async';
+import 'dart:io';
+import 'dart:math' as math;
 
-dependencies {
-    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.activity:activity-compose:1.9.1")
-
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-storage-ktx")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
-
-    implementation("androidx.credentials:credentials:1.2.2")
-    implementation("androidx.credentials:credentials-play-services-auth:1.2.2")
-    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
-
-    implementation("io.coil-kt:coil-compose:2.6.0")
-    implementation("io.coil-kt:coil-gif:2.6.0")
-}
-
-===== FILE: app/google-services.json =====
-(نزّله من Firebase Console وحطه هنا — ما أقدر أكتبه لك لأنه خاص بمشروعك)
-
-===== FILE: app/src/main/AndroidManifest.xml =====
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-
-    <application
-        android:allowBackup="true"
-        android:icon="@drawable/lymon_icon"
-        android:roundIcon="@drawable/lymon_icon"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.Lymon">
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
-</manifest>
-
-===== FILE: app/src/main/res/values/strings.xml =====
-<resources>
-    <string name="app_name">Lymon chat</string>
-</resources>
-
-===== FILE: app/src/main/res/values/themes.xml =====
-<resources>
-    <style name="Theme.Lymon" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">#F1F1F1</item>
-        <item name="android:statusBarColor">#F1F1F1</item>
-        <item name="android:navigationBarColor">#F1F1F1</item>
-    </style>
-</resources>
-
-===== FILE: app/src/main/res/drawable/lymon_icon.xml =====
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <path android:fillColor="#F1F1F1" android:pathData="M0,0h108v108h-108z" />
-    <path android:fillColor="#1E6B34" android:pathData="M54,54m-36,0a36,36 0,1 1,72 0a36,36 0,1 1,-72 0" />
-    <path android:fillColor="#F4D31B" android:pathData="M54,54m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0" />
-    <path android:strokeColor="#FFFFFF" android:strokeWidth="2.5" android:pathData="M54,26L54,82M26,54L82,54M34,34L74,74M74,34L34,74" />
-</vector>
-
-===== FILE: app/src/main/java/com/lymon/chat/MainActivity.kt =====
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
-
-package com.lymon.chat
-
-import android.Manifest
-import android.content.Intent
-import android.media.MediaPlayer
-import android.media.MediaRecorder
-import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.credentials.CredentialManager
-import androidx.credentials.GetCredentialRequest
-import coil.ImageLoader
-import coil.compose.AsyncImage
-import coil.decode.GifDecoder
-import coil.decode.ImageDecoderDecoder
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
-import com.google.firebase.storage.FirebaseStorage
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import java.io.File
-import java.util.UUID
-import kotlin.math.cos
-import kotlin.math.sin
+import 'package:audioplayers/audioplayers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // =====================================================================
-//  الألوان والثيم واللوجو (مرسوم بالكود)
+//  الألوان
 // =====================================================================
-val LymonGreen = Color(0xFF1E6B34)
-val LymonLemon = Color(0xFFF4D31B)
-val LeafGreen = Color(0xFF8BC34A)
-val LogoBg = Color(0xFFF1F1F1)
-val BlueBadge = Color(0xFF1DA1F2)
-val GoldBadge = Color(0xFFFFB800)
+const kGreen = Color(0xFF1E6B34);
+const kLemon = Color(0xFFF4D31B);
+const kLeaf = Color(0xFF8BC34A);
+const kLogoBg = Color(0xFFF1F1F1);
+const kBlue = Color(0xFF1DA1F2);
+const kGold = Color(0xFFFFB800);
 
-@Composable
-fun LymonTheme(content: @Composable () -> Unit) {
-    MaterialTheme(
-        colorScheme = lightColorScheme(
-            primary = LymonGreen, onPrimary = Color.White,
-            secondary = LymonLemon, onSecondary = Color.Black,
-            primaryContainer = Color(0xFFDDEFD9),
-            background = Color.White, surface = Color.White
-        ),
-        content = content
-    )
+// =====================================================================
+//  نماذج البيانات
+// =====================================================================
+class UserProfile {
+  final String uid, name, email, role, badge; // role: user|admin  badge: none|blue|gold
+  final bool banned;
+  UserProfile({
+    required this.uid,
+    required this.name,
+    required this.email,
+    required this.role,
+    required this.badge,
+    required this.banned,
+  });
+
+  factory UserProfile.fromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
+    final m = d.data() ?? {};
+    return UserProfile(
+      uid: d.id,
+      name: (m['name'] ?? '') as String,
+      email: (m['email'] ?? '') as String,
+      role: (m['role'] ?? 'user') as String,
+      badge: (m['badge'] ?? 'none') as String,
+      banned: m['banned'] == true,
+    );
+  }
+
+  bool get isAdmin => role == 'admin';
 }
 
-/** لوجو Lymon chat: ليمونة داخل فقاعة محادثة + إشارة + اسم التطبيق */
-@Composable
-fun LemonLogo(modifier: Modifier = Modifier, size: Dp = 180.dp, showText: Boolean = true) {
-    val k = size.value / 180f
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Canvas(Modifier.size(size)) {
-            val w = this.size.width
-            val c = Offset(w * 0.40f, w * 0.60f)
-            val r = w * 0.34f
+class Chat {
+  final String id, name, lastMessage;
+  final bool group;
+  final List<String> members;
+  final Map<String, String> names;
+  final int updatedAt;
+  Chat({
+    required this.id,
+    required this.name,
+    required this.group,
+    required this.members,
+    required this.names,
+    required this.lastMessage,
+    required this.updatedAt,
+  });
 
-            // ذيل الفقاعة
-            val tail = Path().apply {
-                moveTo(c.x - r * 0.95f, c.y + r * 0.30f)
-                lineTo(c.x - r * 1.08f, c.y + r * 1.18f)
-                lineTo(c.x - r * 0.30f, c.y + r * 0.92f)
-                close()
-            }
-            drawPath(tail, LymonGreen)
-            drawPath(
-                Path().apply {
-                    moveTo(c.x - r * 0.85f, c.y + r * 0.45f)
-                    lineTo(c.x - r * 0.90f, c.y + r * 1.00f)
-                    lineTo(c.x - r * 0.40f, c.y + r * 0.85f)
-                    close()
-                }, LymonLemon
-            )
+  factory Chat.fromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
+    final m = d.data() ?? {};
+    return Chat(
+      id: d.id,
+      name: (m['name'] ?? '') as String,
+      group: m['group'] == true,
+      members: List<String>.from(m['members'] ?? const []),
+      names: Map<String, String>.from(m['names'] ?? const {}),
+      lastMessage: (m['lastMessage'] ?? '') as String,
+      updatedAt: (m['updatedAt'] as num?)?.toInt() ?? 0,
+    );
+  }
 
-            // الليمونة
-            drawCircle(LymonGreen, r, c)
-            drawCircle(LymonLemon, r * 0.88f, c)
-            drawCircle(Color(0xFFEAF3C6), r * 0.78f, c)
-            drawCircle(LymonLemon, r * 0.72f, c)
-            for (i in 0 until 8) {
-                val a = Math.toRadians(i * 45.0 + 22.5)
-                drawLine(
-                    Color(0xFFFFF8D0), c,
-                    Offset(c.x + (cos(a) * r * 0.74f).toFloat(), c.y + (sin(a) * r * 0.74f).toFloat()),
-                    strokeWidth = 5f * k
-                )
-            }
-            drawCircle(Color(0xFFF7FBE0), r * 0.10f, c)
-            for (i in 0 until 8) {
-                val a = Math.toRadians(i * 45.0)
-                drawCircle(
-                    if (i % 2 == 0) LeafGreen else Color(0xFFFFF8D0), r * 0.055f,
-                    Offset(c.x + (cos(a) * r * 0.45f).toFloat(), c.y + (sin(a) * r * 0.45f).toFloat())
-                )
-            }
+  String title(String myUid) {
+    if (group) return name;
+    final others = names.entries.where((e) => e.key != myUid);
+    return others.isEmpty ? 'محادثة' : others.first.value;
+  }
 
-            // إشارة الواي فاي
-            val o = Offset(c.x + r * 0.78f, c.y - r * 0.78f)
-            listOf(0.30f, 0.52f, 0.74f).forEach { f ->
-                val rr = r * f
-                drawArc(
-                    LeafGreen, startAngle = -88f, sweepAngle = 76f, useCenter = false,
-                    topLeft = Offset(o.x - rr, o.y - rr), size = Size(rr * 2, rr * 2),
-                    style = Stroke(width = 9f * k, cap = StrokeCap.Round)
-                )
-            }
-        }
-        if (showText) {
-            Text("Lymon", color = LymonGreen, fontSize = (44 * k).sp, fontWeight = FontWeight.ExtraBold)
-            Text("chat", color = LymonGreen, fontSize = (30 * k).sp, fontWeight = FontWeight.Light)
-        }
+  String? otherUid(String myUid) {
+    for (final m in members) {
+      if (m != myUid) return m;
     }
+    return null;
+  }
 }
 
-/** علامة التوثيق: ذهبية للإدارة، زرقاء للموثقين */
-@Composable
-fun BadgeIcon(profile: UserProfile?, size: Dp = 16.dp) {
-    val color = when (profile?.badge) {
-        "gold" -> GoldBadge
-        "blue" -> BlueBadge
-        else -> return
-    }
-    Icon(Icons.Filled.Verified, contentDescription = "موثّق", tint = color, modifier = Modifier.size(size))
-}
+class Msg {
+  final String id, senderId, senderName, type, text, url; // type: text|image|gif|sticker|video|voice
+  final int createdAt;
+  Msg({
+    required this.id,
+    required this.senderId,
+    required this.senderName,
+    required this.type,
+    required this.text,
+    required this.url,
+    required this.createdAt,
+  });
 
-@Composable
-fun Avatar(text: String, size: Int = 44) {
-    Box(
-        Modifier.size(size.dp).clip(CircleShape).background(LymonLemon),
-        contentAlignment = Alignment.Center
-    ) { Text(text.trim().take(1).uppercase(), color = LymonGreen, style = MaterialTheme.typography.titleMedium) }
+  factory Msg.fromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
+    final m = d.data() ?? {};
+    return Msg(
+      id: d.id,
+      senderId: (m['senderId'] ?? '') as String,
+      senderName: (m['senderName'] ?? '') as String,
+      type: (m['type'] ?? 'text') as String,
+      text: (m['text'] ?? '') as String,
+      url: (m['url'] ?? '') as String,
+      createdAt: (m['createdAt'] as num?)?.toInt() ?? 0,
+    );
+  }
 }
 
 // =====================================================================
-//  نماذج البيانات + Firebase
+//  Firebase
 // =====================================================================
-data class UserProfile(
-    val uid: String = "",
-    val name: String = "",
-    val email: String = "",
-    val photo: String = "",
-    val role: String = "user",      // user | admin
-    val badge: String = "none",     // none | blue | gold
-    val banned: Boolean = false
-)
+class Repo {
+  static final auth = FirebaseAuth.instance;
+  static final db = FirebaseFirestore.instance;
+  static final storage = FirebaseStorage.instance;
 
-data class Chat(
-    val id: String = "",
-    val name: String = "",
-    val group: Boolean = false,
-    val members: List<String> = emptyList(),
-    val names: Map<String, String> = emptyMap(),
-    val lastMessage: String = "",
-    val updatedAt: Long = 0
-) {
-    fun title(myUid: String): String =
-        if (group) name else names.filterKeys { it != myUid }.values.firstOrNull() ?: "محادثة"
-}
-
-data class Message(
-    val id: String = "",
-    val senderId: String = "",
-    val senderName: String = "",
-    val type: String = "text",      // text | image | gif | sticker | video | voice
-    val text: String = "",
-    val url: String = "",
-    val createdAt: Long = 0
-)
-
-object Repo {
-    val auth = FirebaseAuth.getInstance()
-    private val db = FirebaseFirestore.getInstance()
-    private val storage = FirebaseStorage.getInstance()
-
-    fun authFlow(): Flow<String?> = callbackFlow {
-        val l = FirebaseAuth.AuthStateListener { trySend(it.currentUser?.uid) }
-        auth.addAuthStateListener(l)
-        awaitClose { auth.removeAuthStateListener(l) }
+  static Future<void> _ensureProfile(User u, String name) async {
+    final ref = db.collection('users').doc(u.uid);
+    final s = await ref.get();
+    if (!s.exists) {
+      await ref.set({
+        'name': name,
+        'email': u.email ?? '',
+        'photo': u.photoURL ?? '',
+        'role': 'user',
+        'badge': 'none',
+        'banned': false,
+      });
     }
+  }
 
-    private suspend fun createProfileIfMissing(uid: String, name: String, email: String, photo: String) {
-        val ref = db.collection("users").document(uid)
-        if (!ref.get().await().exists()) {
-            ref.set(
-                mapOf(
-                    "name" to name, "email" to email, "photo" to photo,
-                    "role" to "user", "badge" to "none", "banned" to false
-                )
-            ).await()
-        }
-    }
+  static Future<void> register(String name, String email, String pass) async {
+    final c = await auth.createUserWithEmailAndPassword(email: email, password: pass);
+    await _ensureProfile(c.user!, name);
+  }
 
-    suspend fun register(name: String, email: String, pass: String) {
-        val u = auth.createUserWithEmailAndPassword(email, pass).await().user!!
-        createProfileIfMissing(u.uid, name, email, "")
-    }
+  static Future<void> login(String email, String pass) async {
+    await auth.signInWithEmailAndPassword(email: email, password: pass);
+  }
 
-    suspend fun login(email: String, pass: String) {
-        auth.signInWithEmailAndPassword(email, pass).await()
-    }
+  static Future<void> google() async {
+    final acc = await GoogleSignIn().signIn();
+    if (acc == null) return;
+    final a = await acc.authentication;
+    final cred = GoogleAuthProvider.credential(accessToken: a.accessToken, idToken: a.idToken);
+    final r = await auth.signInWithCredential(cred);
+    await _ensureProfile(r.user!, r.user!.displayName ?? 'مستخدم');
+  }
 
-    suspend fun googleLogin(idToken: String) {
-        val u = auth.signInWithCredential(GoogleAuthProvider.getCredential(idToken, null)).await().user!!
-        createProfileIfMissing(u.uid, u.displayName ?: "مستخدم", u.email ?: "", u.photoUrl?.toString() ?: "")
-    }
+  static Future<void> logout() async {
+    try {
+      await GoogleSignIn().signOut();
+    } catch (_) {}
+    await auth.signOut();
+  }
 
-    fun logout() = auth.signOut()
+  static Stream<UserProfile?> profile(String uid) =>
+      db.collection('users').doc(uid).snapshots().map((s) => s.exists ? UserProfile.fromDoc(s) : null);
 
-    fun profileFlow(uid: String): Flow<UserProfile?> = callbackFlow {
-        val l = db.collection("users").document(uid).addSnapshotListener { s, _ ->
-            trySend(if (s != null && s.exists()) s.toObject(UserProfile::class.java)?.copy(uid = s.id) else null)
-        }
-        awaitClose { l.remove() }
-    }
+  static Stream<List<UserProfile>> users() =>
+      db.collection('users').snapshots().map((s) => s.docs.map(UserProfile.fromDoc).toList());
 
-    fun usersFlow(): Flow<List<UserProfile>> = callbackFlow {
-        val l = db.collection("users").addSnapshotListener { s, _ ->
-            trySend(s?.documents?.mapNotNull { d -> d.toObject(UserProfile::class.java)?.copy(uid = d.id) } ?: emptyList())
-        }
-        awaitClose { l.remove() }
-    }
+  static Stream<List<Chat>> chats(String uid) =>
+      db.collection('chats').where('members', arrayContains: uid).snapshots().map((s) {
+        final l = s.docs.map(Chat.fromDoc).toList();
+        l.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+        return l;
+      });
 
-    fun chatsFlow(uid: String): Flow<List<Chat>> = callbackFlow {
-        val l = db.collection("chats").whereArrayContains("members", uid).addSnapshotListener { s, _ ->
-            val list = s?.documents?.mapNotNull { d -> d.toObject(Chat::class.java)?.copy(id = d.id) } ?: emptyList()
-            trySend(list.sortedByDescending { it.updatedAt })
-        }
-        awaitClose { l.remove() }
-    }
+  static Stream<List<Msg>> messages(String chatId) => db
+      .collection('chats')
+      .doc(chatId)
+      .collection('messages')
+      .orderBy('createdAt')
+      .snapshots()
+      .map((s) => s.docs.map(Msg.fromDoc).toList());
 
-    fun messagesFlow(chatId: String): Flow<List<Message>> = callbackFlow {
-        val l = db.collection("chats").document(chatId).collection("messages")
-            .orderBy("createdAt").addSnapshotListener { s, _ ->
-                trySend(s?.documents?.mapNotNull { d -> d.toObject(Message::class.java)?.copy(id = d.id) } ?: emptyList())
-            }
-        awaitClose { l.remove() }
-    }
+  static Future<Chat> openDirect(UserProfile me, UserProfile other) async {
+    final ids = [me.uid, other.uid]..sort();
+    final id = ids.join('_');
+    final names = {me.uid: me.name, other.uid: other.name};
+    await db.collection('chats').doc(id).set({
+      'group': false,
+      'members': [me.uid, other.uid],
+      'names': names,
+    }, SetOptions(merge: true));
+    return Chat(
+      id: id, name: '', group: false, members: [me.uid, other.uid],
+      names: names, lastMessage: '', updatedAt: 0,
+    );
+  }
 
-    suspend fun openDirect(me: UserProfile, other: UserProfile): Chat {
-        val id = listOf(me.uid, other.uid).sorted().joinToString("_")
-        val members = listOf(me.uid, other.uid)
-        val names = mapOf(me.uid to me.name, other.uid to other.name)
-        db.collection("chats").document(id)
-            .set(mapOf("group" to false, "members" to members, "names" to names), SetOptions.merge()).await()
-        return Chat(id = id, group = false, members = members, names = names)
-    }
+  static Future<Chat> createGroup(String name, UserProfile me, List<UserProfile> others) async {
+    final all = [me, ...others];
+    final members = all.map((u) => u.uid).toList();
+    final names = {for (final u in all) u.uid: u.name};
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final ref = db.collection('chats').doc();
+    await ref.set({
+      'name': name,
+      'group': true,
+      'members': members,
+      'names': names,
+      'lastMessage': '',
+      'updatedAt': now,
+      'createdBy': me.uid,
+    });
+    return Chat(
+      id: ref.id, name: name, group: true, members: members,
+      names: names, lastMessage: '', updatedAt: now,
+    );
+  }
 
-    suspend fun createGroup(name: String, me: UserProfile, others: List<UserProfile>): Chat {
-        val all = listOf(me) + others
-        val members = all.map { it.uid }
-        val names = all.associate { it.uid to it.name }
-        val now = System.currentTimeMillis()
-        val ref = db.collection("chats").document()
-        ref.set(
-            mapOf(
-                "name" to name, "group" to true, "members" to members, "names" to names,
-                "lastMessage" to "", "updatedAt" to now, "createdBy" to me.uid
-            )
-        ).await()
-        return Chat(id = ref.id, name = name, group = true, members = members, names = names)
-    }
+  static Future<void> send(String chatId, UserProfile me, String type,
+      {String text = '', String url = ''}) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final chatRef = db.collection('chats').doc(chatId);
+    await chatRef.collection('messages').add({
+      'senderId': me.uid,
+      'senderName': me.name,
+      'type': type,
+      'text': text,
+      'url': url,
+      'createdAt': now,
+    });
+    const previews = {
+      'image': '📷 صورة',
+      'gif': 'GIF',
+      'video': '🎬 فيديو',
+      'voice': '🎤 رسالة صوتية',
+    };
+    final preview = (type == 'text' || type == 'sticker') ? text : (previews[type] ?? '');
+    await chatRef.update({'lastMessage': preview, 'updatedAt': now});
+  }
 
-    suspend fun send(chatId: String, me: UserProfile, type: String, text: String = "", url: String = "") {
-        val now = System.currentTimeMillis()
-        val chatRef = db.collection("chats").document(chatId)
-        chatRef.collection("messages").add(
-            mapOf(
-                "senderId" to me.uid, "senderName" to me.name, "type" to type,
-                "text" to text, "url" to url, "createdAt" to now
-            )
-        ).await()
-        val preview = when (type) {
-            "text", "sticker" -> text
-            "image" -> "📷 صورة"
-            "gif" -> "GIF"
-            "video" -> "🎬 فيديو"
-            "voice" -> "🎤 رسالة صوتية"
-            else -> ""
-        }
-        chatRef.update(mapOf("lastMessage" to preview, "updatedAt" to now)).await()
-    }
+  static Future<String> upload(String chatId, File file) async {
+    final ref = storage.ref('chats/$chatId/${DateTime.now().microsecondsSinceEpoch}');
+    await ref.putFile(file);
+    return ref.getDownloadURL();
+  }
 
-    suspend fun upload(chatId: String, uri: Uri): String {
-        val ref = storage.reference.child("chats/$chatId/${UUID.randomUUID()}")
-        ref.putFile(uri).await()
-        return ref.downloadUrl.await().toString()
-    }
+  // ---- صلاحيات الإدارة ----
+  static Future<void> setBadge(String uid, String badge) =>
+      db.collection('users').doc(uid).update({'badge': badge});
 
-    // ---- صلاحيات الإدارة ----
-    suspend fun setBadge(uid: String, badge: String) {
-        db.collection("users").document(uid).update("badge", badge).await()
-    }
+  static Future<void> setBanned(String uid, bool banned) =>
+      db.collection('users').doc(uid).update({'banned': banned});
 
-    suspend fun setBanned(uid: String, banned: Boolean) {
-        db.collection("users").document(uid).update("banned", banned).await()
-    }
-
-    /** ترقية لمدير = role admin + علامة ذهبية. والإزالة ترجعه مستخدم عادي */
-    suspend fun setAdmin(uid: String, on: Boolean) {
-        db.collection("users").document(uid)
-            .update(mapOf("role" to if (on) "admin" else "user", "badge" to if (on) "gold" else "none")).await()
-    }
+  /// ترقية لمدير = role admin + علامة ذهبية. والإزالة ترجعه مستخدم عادي
+  static Future<void> setAdmin(String uid, bool on) => db
+      .collection('users')
+      .doc(uid)
+      .update({'role': on ? 'admin' : 'user', 'badge': on ? 'gold' : 'none'});
 }
 
 // =====================================================================
-//  الشاشة الرئيسية والتنقل
+//  بداية التطبيق
 // =====================================================================
-sealed class Screen {
-    object Home : Screen()
-    object NewChat : Screen()
-    object Admin : Screen()
-    data class Room(val chat: Chat) : Screen()
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(const LymonApp());
 }
 
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent { LymonTheme { App() } }
-    }
+class LymonApp extends StatelessWidget {
+  const LymonApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Lymon chat',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: kGreen, primary: kGreen, secondary: kLemon),
+        scaffoldBackgroundColor: Colors.white,
+      ),
+      builder: (context, child) => Directionality(textDirection: TextDirection.rtl, child: child!),
+      home: const Root(),
+    );
+  }
 }
 
-@Composable
-fun App() {
-    var showSplash by remember { mutableStateOf(true) }
-    val uid by Repo.authFlow().collectAsState(initial = Repo.auth.currentUser?.uid)
-    when {
-        showSplash -> SplashScreen { showSplash = false }
-        uid == null -> AuthScreen()
-        else -> SignedIn(uid!!)
+// =====================================================================
+//  اللوجو (مرسوم بالكود) + عناصر مشتركة
+// =====================================================================
+class _LogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size s) {
+    final w = s.width;
+    final c = Offset(w * 0.40, w * 0.60);
+    final r = w * 0.34;
+    Paint fill(Color col) => Paint()..color = col;
+
+    // ذيل الفقاعة
+    canvas.drawPath(
+      Path()
+        ..moveTo(c.dx - r * 0.95, c.dy + r * 0.30)
+        ..lineTo(c.dx - r * 1.08, c.dy + r * 1.18)
+        ..lineTo(c.dx - r * 0.30, c.dy + r * 0.92)
+        ..close(),
+      fill(kGreen),
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(c.dx - r * 0.85, c.dy + r * 0.45)
+        ..lineTo(c.dx - r * 0.90, c.dy + r * 1.00)
+        ..lineTo(c.dx - r * 0.40, c.dy + r * 0.85)
+        ..close(),
+      fill(kLemon),
+    );
+
+    // الليمونة
+    canvas.drawCircle(c, r, fill(kGreen));
+    canvas.drawCircle(c, r * 0.88, fill(kLemon));
+    canvas.drawCircle(c, r * 0.78, fill(const Color(0xFFEAF3C6)));
+    canvas.drawCircle(c, r * 0.72, fill(kLemon));
+
+    final line = Paint()
+      ..color = const Color(0xFFFFF8D0)
+      ..strokeWidth = w * 0.028;
+    for (var i = 0; i < 8; i++) {
+      final a = (i * 45 + 22.5) * math.pi / 180;
+      canvas.drawLine(c, Offset(c.dx + math.cos(a) * r * 0.74, c.dy + math.sin(a) * r * 0.74), line);
     }
+    canvas.drawCircle(c, r * 0.10, fill(const Color(0xFFF7FBE0)));
+    for (var i = 0; i < 8; i++) {
+      final a = i * 45 * math.pi / 180;
+      canvas.drawCircle(
+        Offset(c.dx + math.cos(a) * r * 0.45, c.dy + math.sin(a) * r * 0.45),
+        r * 0.055,
+        fill(i.isEven ? kLeaf : const Color(0xFFFFF8D0)),
+      );
+    }
+
+    // إشارة الواي فاي
+    final o = Offset(c.dx + r * 0.78, c.dy - r * 0.78);
+    for (final f in [0.30, 0.52, 0.74]) {
+      canvas.drawArc(
+        Rect.fromCircle(center: o, radius: r * f),
+        -88 * math.pi / 180,
+        76 * math.pi / 180,
+        false,
+        Paint()
+          ..color = kLeaf
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = w * 0.05
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-@Composable
-fun SignedIn(uid: String) {
-    val profile by remember(uid) { Repo.profileFlow(uid) }.collectAsState(initial = null)
-    val users by remember { Repo.usersFlow() }.collectAsState(initial = emptyList())
-    val me = profile
+class LemonLogo extends StatelessWidget {
+  final double size;
+  final bool showText;
+  const LemonLogo({super.key, this.size = 180, this.showText = true});
 
-    if (me == null) {
-        Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
-        return
-    }
-    if (me.banned) {
-        Column(
-            Modifier.fillMaxSize().padding(32.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("تم حظر حسابك", style = MaterialTheme.typography.headlineSmall)
-            Spacer(Modifier.height(8.dp))
-            Text("تواصل مع إدارة Lymon chat إذا تعتقد أن هذا خطأ.")
-            Spacer(Modifier.height(24.dp))
-            Button(onClick = { Repo.logout() }) { Text("تسجيل الخروج") }
-        }
-        return
-    }
+  @override
+  Widget build(BuildContext context) {
+    final k = size / 180;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CustomPaint(size: Size(size, size), painter: _LogoPainter()),
+        if (showText) ...[
+          Text('Lymon',
+              style: TextStyle(color: kGreen, fontSize: 44 * k, fontWeight: FontWeight.w800, height: 1.1)),
+          Text('chat',
+              style: TextStyle(color: kGreen, fontSize: 30 * k, fontWeight: FontWeight.w300, height: 1.1)),
+        ],
+      ],
+    );
+  }
+}
 
-    var screen by remember { mutableStateOf<Screen>(Screen.Home) }
-    BackHandler(enabled = screen != Screen.Home) { screen = Screen.Home }
+/// علامة التوثيق: ذهبية للإدارة، زرقاء للموثقين
+class VerifiedBadge extends StatelessWidget {
+  final UserProfile? profile;
+  final double size;
+  const VerifiedBadge(this.profile, {super.key, this.size = 16});
 
-    when (val s = screen) {
-        Screen.Home -> HomeScreen(
-            me = me, users = users,
-            onOpen = { screen = Screen.Room(it) },
-            onNew = { screen = Screen.NewChat },
-            onAdmin = { screen = Screen.Admin }
-        )
-        Screen.NewChat -> NewChatScreen(
-            me = me, users = users,
-            onBack = { screen = Screen.Home },
-            onCreated = { screen = Screen.Room(it) }
-        )
-        Screen.Admin -> AdminScreen(me = me, users = users, onBack = { screen = Screen.Home })
-        is Screen.Room -> ChatScreen(chat = s.chat, me = me, users = users, onBack = { screen = Screen.Home })
-    }
+  @override
+  Widget build(BuildContext context) {
+    final b = profile?.badge;
+    if (b == 'gold') return Icon(Icons.verified, color: kGold, size: size);
+    if (b == 'blue') return Icon(Icons.verified, color: kBlue, size: size);
+    return const SizedBox.shrink();
+  }
+}
+
+class Avatar extends StatelessWidget {
+  final String name;
+  final double radius;
+  const Avatar(this.name, {super.key, this.radius = 22});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = name.trim();
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: kLemon,
+      child: Text(t.isEmpty ? '؟' : t.substring(0, 1).toUpperCase(),
+          style: const TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
+    );
+  }
+}
+
+// =====================================================================
+//  الجذر: انترو ثم دخول ثم التطبيق
+// =====================================================================
+class Root extends StatefulWidget {
+  const Root({super.key});
+  @override
+  State<Root> createState() => _RootState();
+}
+
+class _RootState extends State<Root> {
+  bool _splash = true;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_splash) return SplashScreen(onDone: () => setState(() => _splash = false));
+    return StreamBuilder<User?>(
+      stream: Repo.auth.authStateChanges(),
+      initialData: Repo.auth.currentUser,
+      builder: (context, snap) {
+        final u = snap.data;
+        if (u == null) return const AuthScreen();
+        return SignedIn(key: ValueKey(u.uid), uid: u.uid);
+      },
+    );
+  }
 }
 
 // =====================================================================
 //  الانترو
 // =====================================================================
-@Composable
-fun SplashScreen(onDone: () -> Unit) {
-    val scale = remember { Animatable(0.6f) }
-    val alpha = remember { Animatable(0f) }
+class SplashScreen extends StatefulWidget {
+  final VoidCallback onDone;
+  const SplashScreen({super.key, required this.onDone});
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
 
-    LaunchedEffect(Unit) {
-        launch { scale.animateTo(1f, tween(900, easing = FastOutSlowInEasing)) }
-        launch { alpha.animateTo(1f, tween(900)) }
-        delay(2300)
-        onDone()
-    }
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late final AnimationController _c =
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..forward();
+  Timer? _t;
 
-    Box(Modifier.fillMaxSize().background(LogoBg), contentAlignment = Alignment.Center) {
-        Box(Modifier.graphicsLayer {
-            scaleX = scale.value
-            scaleY = scale.value
-            this.alpha = alpha.value
-        }) { LemonLogo(size = 260.dp) }
-    }
+  @override
+  void initState() {
+    super.initState();
+    _t = Timer(const Duration(milliseconds: 2300), widget.onDone);
+  }
+
+  @override
+  void dispose() {
+    _t?.cancel();
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kLogoBg,
+      body: Center(
+        child: FadeTransition(
+          opacity: _c,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.6, end: 1.0)
+                .animate(CurvedAnimation(parent: _c, curve: Curves.easeOutCubic)),
+            child: const LemonLogo(size: 260),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // =====================================================================
 //  تسجيل الدخول / إنشاء حساب
 // =====================================================================
-@Composable
-fun AuthScreen() {
-    val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var isRegister by remember { mutableStateOf(false) }
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var pass by remember { mutableStateOf("") }
-    var error by remember { mutableStateOf<String?>(null) }
-    var loading by remember { mutableStateOf(false) }
+class AuthScreen extends StatefulWidget {
+  const AuthScreen({super.key});
+  @override
+  State<AuthScreen> createState() => _AuthScreenState();
+}
 
-    fun run(block: suspend () -> Unit) {
-        scope.launch {
-            loading = true; error = null
-            try { block() } catch (e: Exception) { error = e.localizedMessage ?: "حدث خطأ" }
-            loading = false
-        }
+class _AuthScreenState extends State<AuthScreen> {
+  final _name = TextEditingController();
+  final _email = TextEditingController();
+  final _pass = TextEditingController();
+  bool _register = false;
+  bool _loading = false;
+  String? _error;
+
+  Future<void> _run(Future<void> Function() job) async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      await job();
+    } on FirebaseAuthException catch (e) {
+      _error = e.message ?? e.code;
+    } catch (e) {
+      _error = e.toString();
     }
+    if (mounted) setState(() => _loading = false);
+  }
 
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        LemonLogo(size = 140.dp)
-        Spacer(Modifier.height(16.dp))
-        Text(if (isRegister) "إنشاء حساب جديد" else "تسجيل الدخول", style = MaterialTheme.typography.titleLarge)
-        Spacer(Modifier.height(16.dp))
+  @override
+  void dispose() {
+    _name.dispose();
+    _email.dispose();
+    _pass.dispose();
+    super.dispose();
+  }
 
-        if (isRegister) {
-            OutlinedTextField(name, { name = it }, label = { Text("الاسم") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.height(8.dp))
-        }
-        OutlinedTextField(email, { email = it }, label = { Text("البريد الإلكتروني") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
-            pass, { pass = it }, label = { Text("الرمز السري") }, singleLine = true,
-            visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth()
-        )
-        error?.let { Spacer(Modifier.height(8.dp)); Text(it, color = MaterialTheme.colorScheme.error) }
-        Spacer(Modifier.height(16.dp))
-
-        Button(
-            enabled = !loading && email.isNotBlank() && pass.length >= 6 && (!isRegister || name.isNotBlank()),
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                run { if (isRegister) Repo.register(name.trim(), email.trim(), pass) else Repo.login(email.trim(), pass) }
-            }
-        ) { Text(if (isRegister) "إنشاء الحساب" else "دخول") }
-
-        OutlinedButton(
-            enabled = !loading, modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                run {
-                    val option = GetGoogleIdOption.Builder()
-                        .setFilterByAuthorizedAccounts(false)
-                        .setServerClientId(ctx.getString(R.string.default_web_client_id))
-                        .build()
-                    val request = GetCredentialRequest.Builder().addCredentialOption(option).build()
-                    val result = CredentialManager.create(ctx).getCredential(ctx, request)
-                    val token = GoogleIdTokenCredential.createFrom(result.credential.data).idToken
-                    Repo.googleLogin(token)
-                }
-            }
-        ) { Text("المتابعة بحساب Google") }
-
-        TextButton(onClick = { isRegister = !isRegister; error = null }) {
-            Text(if (isRegister) "عندي حساب؟ سجّل دخول" else "ما عندك حساب؟ أنشئ حساب")
-        }
-        if (loading) LinearProgressIndicator(Modifier.fillMaxWidth())
-    }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                const LemonLogo(size: 140),
+                const SizedBox(height: 16),
+                Text(_register ? 'إنشاء حساب جديد' : 'تسجيل الدخول',
+                    style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 16),
+                if (_register) ...[
+                  TextField(
+                    controller: _name,
+                    decoration: const InputDecoration(labelText: 'الاسم', border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                TextField(
+                  controller: _email,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(labelText: 'البريد الإلكتروني', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _pass,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'الرمز السري', border: OutlineInputBorder()),
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 8),
+                  Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                ],
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: _loading
+                        ? null
+                        : () {
+                            final email = _email.text.trim();
+                            final pass = _pass.text;
+                            final name = _name.text.trim();
+                            if (email.isEmpty || pass.length < 6 || (_register && name.isEmpty)) {
+                              setState(() => _error = 'عبّي كل الحقول (الرمز 6 أحرف على الأقل)');
+                              return;
+                            }
+                            _run(() => _register ? Repo.register(name, email, pass) : Repo.login(email, pass));
+                          },
+                    child: Text(_register ? 'إنشاء الحساب' : 'دخول'),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: _loading ? null : () => _run(Repo.google),
+                    child: const Text('المتابعة بحساب Google'),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => setState(() {
+                    _register = !_register;
+                    _error = null;
+                  }),
+                  child: Text(_register ? 'عندي حساب؟ سجّل دخول' : 'ما عندك حساب؟ أنشئ حساب'),
+                ),
+                if (_loading) const LinearProgressIndicator(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // =====================================================================
-//  قائمة المحادثات + محادثة جديدة
+//  بعد تسجيل الدخول: التنقل بين الشاشات
 // =====================================================================
-@Composable
-fun HomeScreen(
-    me: UserProfile, users: List<UserProfile>,
-    onOpen: (Chat) -> Unit, onNew: () -> Unit, onAdmin: () -> Unit
-) {
-    val chats by remember(me.uid) { Repo.chatsFlow(me.uid) }.collectAsState(initial = emptyList())
-    val byId = users.associateBy { it.uid }
+enum _Page { home, newChat, admin, room }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(painterResource(R.drawable.lymon_icon), null, Modifier.size(32.dp).clip(CircleShape))
-                        Spacer(Modifier.width(8.dp))
-                        Text("Lymon chat", color = LymonGreen)
-                    }
-                },
-                actions = {
-                    if (me.role == "admin") {
-                        IconButton(onClick = onAdmin) { Icon(Icons.Filled.AdminPanelSettings, "لوحة الإدارة", tint = GoldBadge) }
-                    }
-                    IconButton(onClick = { Repo.logout() }) { Icon(Icons.AutoMirrored.Filled.Logout, "خروج") }
-                }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onNew, containerColor = LymonGreen, contentColor = Color.White) {
-                Icon(Icons.Filled.Add, "محادثة جديدة")
-            }
-        }
-    ) { pad ->
-        if (chats.isEmpty()) {
-            Box(Modifier.fillMaxSize().padding(pad), Alignment.Center) { Text("ما عندك محادثات بعد. اضغط + للبدء") }
-        } else LazyColumn(Modifier.padding(pad)) {
-            items(chats, key = { it.id }) { chat ->
-                val title = chat.title(me.uid)
-                val otherUid = chat.members.firstOrNull { it != me.uid }
-                Row(
-                    Modifier.fillMaxWidth().clickable { onOpen(chat) }.padding(horizontal = 16.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Avatar(title)
-                    Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            if (!chat.group) { Spacer(Modifier.width(4.dp)); BadgeIcon(byId[otherUid]) }
-                        }
-                        Text(
-                            chat.lastMessage, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                HorizontalDivider()
-            }
-        }
-    }
+class SignedIn extends StatefulWidget {
+  final String uid;
+  const SignedIn({super.key, required this.uid});
+  @override
+  State<SignedIn> createState() => _SignedInState();
 }
 
-/** اختر شخص واحد = محادثة خاصة، أكثر من شخص + اسم = قروب */
-@Composable
-fun NewChatScreen(me: UserProfile, users: List<UserProfile>, onBack: () -> Unit, onCreated: (Chat) -> Unit) {
-    val scope = rememberCoroutineScope()
-    var groupName by remember { mutableStateOf("") }
-    var query by remember { mutableStateOf("") }
-    var selected by remember { mutableStateOf(setOf<String>()) }
-    var busy by remember { mutableStateOf(false) }
-    val list = users.filter { it.uid != me.uid && !it.banned && it.name.contains(query, ignoreCase = true) }
-    val isGroup = selected.size > 1 || groupName.isNotBlank()
-    val canStart = selected.isNotEmpty() && (!isGroup || groupName.isNotBlank()) && !busy
+class _SignedInState extends State<SignedIn> {
+  _Page _page = _Page.home;
+  Chat? _room;
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("محادثة جديدة") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "رجوع") } }
-            )
-        },
-        bottomBar = {
-            Button(
-                enabled = canStart,
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                onClick = {
-                    scope.launch {
-                        busy = true
-                        val chosen = users.filter { it.uid in selected }
-                        val chat = if (isGroup) Repo.createGroup(groupName.trim(), me, chosen)
-                        else Repo.openDirect(me, chosen.first())
-                        busy = false
-                        onCreated(chat)
-                    }
-                }
-            ) { Text(if (isGroup) "إنشاء القروب" else "ابدأ المحادثة") }
+  void _go(_Page p, {Chat? room}) => setState(() {
+        _page = p;
+        _room = room;
+      });
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<UserProfile?>(
+      stream: Repo.profile(widget.uid),
+      builder: (context, ps) {
+        final me = ps.data;
+        if (me == null) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-    ) { pad ->
-        Column(Modifier.padding(pad).padding(horizontal = 16.dp)) {
-            OutlinedTextField(
-                groupName, { groupName = it }, label = { Text("اسم القروب (اتركه فاضي لمحادثة خاصة)") },
-                singleLine = true, modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                query, { query = it }, label = { Text("ابحث بالاسم") },
-                singleLine = true, modifier = Modifier.fillMaxWidth()
-            )
-            LazyColumn {
-                items(list, key = { it.uid }) { u ->
-                    Row(
-                        Modifier.fillMaxWidth().clickable {
-                            selected = if (u.uid in selected) selected - u.uid else selected + u.uid
-                        }.padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Checkbox(checked = u.uid in selected, onCheckedChange = null)
-                        Spacer(Modifier.width(8.dp))
-                        Avatar(u.name, 36)
-                        Spacer(Modifier.width(8.dp))
-                        Text(u.name); Spacer(Modifier.width(4.dp)); BadgeIcon(u)
-                    }
-                }
+        if (me.banned) {
+          return Scaffold(
+            body: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('تم حظر حسابك', style: Theme.of(context).textTheme.headlineSmall),
+                  const SizedBox(height: 8),
+                  const Text('تواصل مع إدارة Lymon chat إذا تعتقد أن هذا خطأ.'),
+                  const SizedBox(height: 24),
+                  FilledButton(onPressed: Repo.logout, child: const Text('تسجيل الخروج')),
+                ],
+              ),
+            ),
+          );
+        }
+        return StreamBuilder<List<UserProfile>>(
+          stream: Repo.users(),
+          builder: (context, us) {
+            final users = us.data ?? const <UserProfile>[];
+            Widget body;
+            switch (_page) {
+              case _Page.home:
+                body = HomeScreen(
+                  me: me,
+                  users: users,
+                  onOpen: (c) => _go(_Page.room, room: c),
+                  onNew: () => _go(_Page.newChat),
+                  onAdmin: () => _go(_Page.admin),
+                );
+                break;
+              case _Page.newChat:
+                body = NewChatScreen(
+                  me: me,
+                  users: users,
+                  onBack: () => _go(_Page.home),
+                  onCreated: (c) => _go(_Page.room, room: c),
+                );
+                break;
+              case _Page.admin:
+                body = AdminScreen(me: me, users: users, onBack: () => _go(_Page.home));
+                break;
+              case _Page.room:
+                body = ChatScreen(chat: _room!, me: me, users: users, onBack: () => _go(_Page.home));
+                break;
             }
-        }
-    }
+            return WillPopScope(
+              onWillPop: () async {
+                if (_page != _Page.home) {
+                  _go(_Page.home);
+                  return false;
+                }
+                return true;
+              },
+              child: body,
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+// =====================================================================
+//  قائمة المحادثات
+// =====================================================================
+class HomeScreen extends StatelessWidget {
+  final UserProfile me;
+  final List<UserProfile> users;
+  final void Function(Chat) onOpen;
+  final VoidCallback onNew, onAdmin;
+  const HomeScreen({
+    super.key,
+    required this.me,
+    required this.users,
+    required this.onOpen,
+    required this.onNew,
+    required this.onAdmin,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final byId = {for (final u in users) u.uid: u};
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Lymon chat', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
+        actions: [
+          if (me.isAdmin)
+            IconButton(
+              icon: const Icon(Icons.admin_panel_settings, color: kGold),
+              tooltip: 'لوحة الإدارة',
+              onPressed: onAdmin,
+            ),
+          IconButton(icon: const Icon(Icons.logout), tooltip: 'خروج', onPressed: Repo.logout),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: kGreen,
+        foregroundColor: Colors.white,
+        onPressed: onNew,
+        child: const Icon(Icons.add),
+      ),
+      body: StreamBuilder<List<Chat>>(
+        stream: Repo.chats(me.uid),
+        builder: (context, snap) {
+          final chats = snap.data ?? const <Chat>[];
+          if (chats.isEmpty) {
+            return const Center(child: Text('ما عندك محادثات بعد. اضغط + للبدء'));
+          }
+          return ListView.separated(
+            itemCount: chats.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (context, i) {
+              final c = chats[i];
+              final title = c.title(me.uid);
+              return ListTile(
+                leading: Avatar(title),
+                title: Row(children: [
+                  Flexible(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis)),
+                  if (!c.group) ...[
+                    const SizedBox(width: 4),
+                    VerifiedBadge(byId[c.otherUid(me.uid)]),
+                  ],
+                ]),
+                subtitle: Text(c.lastMessage, maxLines: 1, overflow: TextOverflow.ellipsis),
+                onTap: () => onOpen(c),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+// =====================================================================
+//  محادثة جديدة: شخص واحد = خاصة، أكثر + اسم = قروب
+// =====================================================================
+class NewChatScreen extends StatefulWidget {
+  final UserProfile me;
+  final List<UserProfile> users;
+  final VoidCallback onBack;
+  final void Function(Chat) onCreated;
+  const NewChatScreen({
+    super.key,
+    required this.me,
+    required this.users,
+    required this.onBack,
+    required this.onCreated,
+  });
+  @override
+  State<NewChatScreen> createState() => _NewChatScreenState();
+}
+
+class _NewChatScreenState extends State<NewChatScreen> {
+  final _group = TextEditingController();
+  final _query = TextEditingController();
+  final Set<String> _sel = {};
+  bool _busy = false;
+
+  bool get _isGroup => _sel.length > 1 || _group.text.trim().isNotEmpty;
+  bool get _canStart => _sel.isNotEmpty && (!_isGroup || _group.text.trim().isNotEmpty) && !_busy;
+
+  Future<void> _start() async {
+    setState(() => _busy = true);
+    final chosen = widget.users.where((u) => _sel.contains(u.uid)).toList();
+    final chat = _isGroup
+        ? await Repo.createGroup(_group.text.trim(), widget.me, chosen)
+        : await Repo.openDirect(widget.me, chosen.first);
+    if (mounted) setState(() => _busy = false);
+    widget.onCreated(chat);
+  }
+
+  @override
+  void dispose() {
+    _group.dispose();
+    _query.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final q = _query.text.trim().toLowerCase();
+    final list = widget.users
+        .where((u) => u.uid != widget.me.uid && !u.banned && u.name.toLowerCase().contains(q))
+        .toList();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('محادثة جديدة'),
+        leading: IconButton(icon: const Icon(Icons.arrow_forward), onPressed: widget.onBack),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16),
+        child: FilledButton(
+          onPressed: _canStart ? _start : null,
+          child: Text(_isGroup ? 'إنشاء القروب' : 'ابدأ المحادثة'),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(children: [
+          TextField(
+            controller: _group,
+            onChanged: (_) => setState(() {}),
+            decoration: const InputDecoration(
+                labelText: 'اسم القروب (اتركه فاضي لمحادثة خاصة)', border: OutlineInputBorder()),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _query,
+            onChanged: (_) => setState(() {}),
+            decoration: const InputDecoration(labelText: 'ابحث بالاسم', border: OutlineInputBorder()),
+          ),
+          Expanded(
+            child: ListView(
+              children: [
+                for (final u in list)
+                  CheckboxListTile(
+                    value: _sel.contains(u.uid),
+                    onChanged: (v) => setState(() => v == true ? _sel.add(u.uid) : _sel.remove(u.uid)),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    secondary: Avatar(u.name, radius: 18),
+                    title: Row(children: [
+                      Flexible(child: Text(u.name)),
+                      const SizedBox(width: 4),
+                      VerifiedBadge(u),
+                    ]),
+                  ),
+              ],
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
 }
 
 // =====================================================================
 //  لوحة الإدارة
 // =====================================================================
-@Composable
-fun AdminScreen(me: UserProfile, users: List<UserProfile>, onBack: () -> Unit) {
-    val scope = rememberCoroutineScope()
-    var query by remember { mutableStateOf("") }
-    val list = users.filter { it.name.contains(query, true) || it.email.contains(query, true) }
+class AdminScreen extends StatefulWidget {
+  final UserProfile me;
+  final List<UserProfile> users;
+  final VoidCallback onBack;
+  const AdminScreen({super.key, required this.me, required this.users, required this.onBack});
+  @override
+  State<AdminScreen> createState() => _AdminScreenState();
+}
 
-    Scaffold(topBar = {
-        TopAppBar(
-            title = { Text("لوحة الإدارة") },
-            navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "رجوع") } }
-        )
-    }) { pad ->
-        Column(Modifier.padding(pad).padding(horizontal = 16.dp)) {
-            OutlinedTextField(
-                query, { query = it }, label = { Text("ابحث بالاسم أو البريد") },
-                singleLine = true, modifier = Modifier.fillMaxWidth()
-            )
-            Text("عدد المستخدمين: ${users.size}", modifier = Modifier.padding(vertical = 8.dp))
-            LazyColumn {
-                items(list, key = { it.uid }) { u ->
-                    var menu by remember { mutableStateOf(false) }
-                    Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Avatar(u.name, 40)
-                        Spacer(Modifier.width(10.dp))
-                        Column(Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(u.name, style = MaterialTheme.typography.titleSmall)
-                                Spacer(Modifier.width(4.dp)); BadgeIcon(u)
-                            }
-                            Text(
-                                u.email + (if (u.role == "admin") " • مدير" else "") + (if (u.banned) " • محظور" else ""),
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-                        if (u.uid != me.uid) {
-                            Box {
-                                IconButton(onClick = { menu = true }) { Icon(Icons.Filled.MoreVert, "خيارات") }
-                                DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                                    if (u.badge == "blue") {
-                                        DropdownMenuItem(text = { Text("إزالة العلامة الزرقاء") },
-                                            onClick = { menu = false; scope.launch { Repo.setBadge(u.uid, "none") } })
-                                    } else if (u.role != "admin") {
-                                        DropdownMenuItem(text = { Text("توثيق بعلامة زرقاء") },
-                                            onClick = { menu = false; scope.launch { Repo.setBadge(u.uid, "blue") } })
-                                    }
-                                    if (u.role == "admin") {
-                                        DropdownMenuItem(text = { Text("إزالة الإدارة") },
-                                            onClick = { menu = false; scope.launch { Repo.setAdmin(u.uid, false) } })
-                                    } else {
-                                        DropdownMenuItem(text = { Text("ترقية لمدير (علامة ذهبية)") },
-                                            onClick = { menu = false; scope.launch { Repo.setAdmin(u.uid, true) } })
-                                    }
-                                    DropdownMenuItem(
-                                        text = { Text(if (u.banned) "فك الحظر" else "حظر المستخدم") },
-                                        onClick = { menu = false; scope.launch { Repo.setBanned(u.uid, !u.banned) } }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    HorizontalDivider()
-                }
-            }
-        }
+class _AdminScreenState extends State<AdminScreen> {
+  final _query = TextEditingController();
+
+  @override
+  void dispose() {
+    _query.dispose();
+    super.dispose();
+  }
+
+  Future<void> _act(String v, UserProfile u) async {
+    switch (v) {
+      case 'blue':
+        await Repo.setBadge(u.uid, 'blue');
+        break;
+      case 'unblue':
+        await Repo.setBadge(u.uid, 'none');
+        break;
+      case 'admin':
+        await Repo.setAdmin(u.uid, true);
+        break;
+      case 'unadmin':
+        await Repo.setAdmin(u.uid, false);
+        break;
+      case 'ban':
+        await Repo.setBanned(u.uid, true);
+        break;
+      case 'unban':
+        await Repo.setBanned(u.uid, false);
+        break;
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final q = _query.text.trim().toLowerCase();
+    final list = widget.users
+        .where((u) => u.name.toLowerCase().contains(q) || u.email.toLowerCase().contains(q))
+        .toList();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('لوحة الإدارة'),
+        leading: IconButton(icon: const Icon(Icons.arrow_forward), onPressed: widget.onBack),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(children: [
+          TextField(
+            controller: _query,
+            onChanged: (_) => setState(() {}),
+            decoration: const InputDecoration(labelText: 'ابحث بالاسم أو البريد', border: OutlineInputBorder()),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text('عدد المستخدمين: ${widget.users.length}'),
+            ),
+          ),
+          Expanded(
+            child: ListView.separated(
+              itemCount: list.length,
+              separatorBuilder: (_, __) => const Divider(height: 1),
+              itemBuilder: (context, i) {
+                final u = list[i];
+                final sub = u.email + (u.isAdmin ? ' • مدير' : '') + (u.banned ? ' • محظور' : '');
+                return ListTile(
+                  leading: Avatar(u.name, radius: 20),
+                  title: Row(children: [
+                    Flexible(child: Text(u.name)),
+                    const SizedBox(width: 4),
+                    VerifiedBadge(u),
+                  ]),
+                  subtitle: Text(sub),
+                  trailing: u.uid == widget.me.uid
+                      ? null
+                      : PopupMenuButton<String>(
+                          onSelected: (v) => _act(v, u),
+                          itemBuilder: (_) => [
+                            if (u.badge == 'blue')
+                              const PopupMenuItem(value: 'unblue', child: Text('إزالة العلامة الزرقاء'))
+                            else if (!u.isAdmin)
+                              const PopupMenuItem(value: 'blue', child: Text('توثيق بعلامة زرقاء')),
+                            if (u.isAdmin)
+                              const PopupMenuItem(value: 'unadmin', child: Text('إزالة الإدارة'))
+                            else
+                              const PopupMenuItem(value: 'admin', child: Text('ترقية لمدير (علامة ذهبية)')),
+                            PopupMenuItem(
+                              value: u.banned ? 'unban' : 'ban',
+                              child: Text(u.banned ? 'فك الحظر' : 'حظر المستخدم'),
+                            ),
+                          ],
+                        ),
+                );
+              },
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
 }
 
 // =====================================================================
 //  شاشة المحادثة (نص، صور، GIF، فيديو، فويس، ملصقات)
 // =====================================================================
-private val STICKERS = listOf(
-    "😀", "😂", "🥰", "😎", "🤩", "😭", "😡", "😴", "🤔", "🙈",
-    "👍", "👏", "🙏", "💪", "🤝", "🔥", "❤️", "🎉", "💯", "🍋"
-)
+const _stickers = [
+  '😀', '😂', '🥰', '😎', '🤩', '😭', '😡', '😴', '🤔', '🙈',
+  '👍', '👏', '🙏', '💪', '🤝', '🔥', '❤️', '🎉', '💯', '🍋',
+];
 
-@Composable
-fun ChatScreen(chat: Chat, me: UserProfile, users: List<UserProfile>, onBack: () -> Unit) {
-    val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val messages by remember(chat.id) { Repo.messagesFlow(chat.id) }.collectAsState(initial = emptyList())
-    val byId = users.associateBy { it.uid }
-    val listState = rememberLazyListState()
+class ChatScreen extends StatefulWidget {
+  final Chat chat;
+  final UserProfile me;
+  final List<UserProfile> users;
+  final VoidCallback onBack;
+  const ChatScreen({
+    super.key,
+    required this.chat,
+    required this.me,
+    required this.users,
+    required this.onBack,
+  });
+  @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
 
-    var text by remember { mutableStateOf("") }
-    var sending by remember { mutableStateOf(false) }
-    var showStickers by remember { mutableStateOf(false) }
-    var attachMenu by remember { mutableStateOf(false) }
-    var pendingType by remember { mutableStateOf("image") }
-    var error by remember { mutableStateOf<String?>(null) }
+class _ChatScreenState extends State<ChatScreen> {
+  final _text = TextEditingController();
+  final _scroll = ScrollController();
+  final _rec = AudioRecorder();
+  bool _sending = false, _showStickers = false, _recording = false;
+  String? _error;
+  int _lastCount = 0;
 
-    val loader = remember {
-        ImageLoader.Builder(ctx).components {
-            if (Build.VERSION.SDK_INT >= 28) add(ImageDecoderDecoder.Factory()) else add(GifDecoder.Factory())
-        }.build()
+  @override
+  void dispose() {
+    _text.dispose();
+    _scroll.dispose();
+    _rec.dispose();
+    super.dispose();
+  }
+
+  Future<void> _guard(Future<void> Function() job) async {
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      await job();
+    } catch (e) {
+      _error = 'تعذر الإرسال: $e';
     }
+    if (mounted) setState(() => _sending = false);
+  }
 
-    LaunchedEffect(messages.size) {
-        if (messages.isNotEmpty()) listState.animateScrollToItem(messages.lastIndex)
+  Future<void> _sendFile(File f, String type) => _guard(() async {
+        final url = await Repo.upload(widget.chat.id, f);
+        await Repo.send(widget.chat.id, widget.me, type, url: url);
+      });
+
+  Future<void> _pickImage() async {
+    final x = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (x != null) _sendFile(File(x.path), 'image');
+  }
+
+  Future<void> _pickVideo() async {
+    final x = await ImagePicker().pickVideo(source: ImageSource.gallery);
+    if (x != null) _sendFile(File(x.path), 'video');
+  }
+
+  Future<void> _pickGif() async {
+    final r = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['gif']);
+    final p = r?.files.single.path;
+    if (p != null) _sendFile(File(p), 'gif');
+  }
+
+  Future<void> _startRec() async {
+    try {
+      if (!await _rec.hasPermission()) {
+        setState(() => _error = 'نحتاج إذن المايكروفون');
+        return;
+      }
+      final dir = await getTemporaryDirectory();
+      final path = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      await _rec.start(const RecordConfig(encoder: AudioEncoder.aacLc), path: path);
+      setState(() => _recording = true);
+    } catch (e) {
+      setState(() => _error = 'تعذر بدء التسجيل');
     }
+  }
 
-    fun safe(block: suspend () -> Unit) {
-        scope.launch {
-            sending = true; error = null
-            try { block() } catch (e: Exception) { error = e.localizedMessage ?: "تعذر الإرسال" }
-            sending = false
-        }
-    }
+  Future<void> _stopRec() async {
+    final path = await _rec.stop();
+    setState(() => _recording = false);
+    if (path != null) _sendFile(File(path), 'voice');
+  }
 
-    val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        if (uri != null) safe {
-            val url = Repo.upload(chat.id, uri)
-            Repo.send(chat.id, me, pendingType, url = url)
-        }
-    }
-    fun pick(type: String, mime: String) { pendingType = type; attachMenu = false; picker.launch(mime) }
+  void _sendText() {
+    final t = _text.text.trim();
+    if (t.isEmpty) return;
+    _text.clear();
+    setState(() {});
+    _guard(() => Repo.send(widget.chat.id, widget.me, 'text', text: t));
+  }
 
-    // ---- تسجيل الصوت ----
-    var recorder by remember { mutableStateOf<MediaRecorder?>(null) }
-    var recFile by remember { mutableStateOf<File?>(null) }
-
-    fun startRec() {
-        try {
-            val f = File(ctx.cacheDir, "voice_${System.currentTimeMillis()}.m4a")
-            val r = if (Build.VERSION.SDK_INT >= 31) MediaRecorder(ctx) else @Suppress("DEPRECATION") MediaRecorder()
-            r.setAudioSource(MediaRecorder.AudioSource.MIC)
-            r.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            r.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            r.setOutputFile(f.absolutePath)
-            r.prepare(); r.start()
-            recorder = r; recFile = f
-        } catch (e: Exception) { error = "تعذر بدء التسجيل" }
-    }
-
-    fun stopRec() {
-        val r = recorder; val f = recFile
-        recorder = null; recFile = null
-        if (r == null || f == null) return
-        val ok = try { r.stop(); true } catch (e: Exception) { false }
-        r.release()
-        if (ok) safe {
-            val url = Repo.upload(chat.id, Uri.fromFile(f))
-            Repo.send(chat.id, me, "voice", url = url)
-            f.delete()
-        }
-    }
-
-    val micPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) startRec() else error = "نحتاج إذن المايكروفون"
-    }
-    DisposableEffect(Unit) { onDispose { try { recorder?.release() } catch (_: Exception) {} } }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Avatar(chat.title(me.uid), 36)
-                        Spacer(Modifier.width(10.dp))
-                        Text(chat.title(me.uid))
-                        if (!chat.group) {
-                            Spacer(Modifier.width(4.dp))
-                            BadgeIcon(byId[chat.members.firstOrNull { it != me.uid }])
-                        }
-                    }
+  @override
+  Widget build(BuildContext context) {
+    final chat = widget.chat, me = widget.me;
+    final byId = {for (final u in widget.users) u.uid: u};
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(icon: const Icon(Icons.arrow_forward), onPressed: widget.onBack),
+        title: Row(children: [
+          Avatar(chat.title(me.uid), radius: 18),
+          const SizedBox(width: 10),
+          Flexible(child: Text(chat.title(me.uid), overflow: TextOverflow.ellipsis)),
+          if (!chat.group) ...[
+            const SizedBox(width: 4),
+            VerifiedBadge(byId[chat.otherUid(me.uid)]),
+          ],
+        ]),
+      ),
+      body: Column(children: [
+        Expanded(
+          child: StreamBuilder<List<Msg>>(
+            stream: Repo.messages(chat.id),
+            builder: (context, snap) {
+              final msgs = snap.data ?? const <Msg>[];
+              if (msgs.length != _lastCount) {
+                _lastCount = msgs.length;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (_scroll.hasClients) _scroll.jumpTo(_scroll.position.maxScrollExtent);
+                });
+              }
+              return ListView.builder(
+                controller: _scroll,
+                padding: const EdgeInsets.all(8),
+                itemCount: msgs.length,
+                itemBuilder: (context, i) {
+                  final m = msgs[i];
+                  final mine = m.senderId == me.uid;
+                  return Align(
+                    alignment: mine ? AlignmentDirectional.centerStart : AlignmentDirectional.centerEnd,
+                    child: _Bubble(msg: m, mine: mine, group: chat.group, sender: byId[m.senderId]),
+                  );
                 },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "رجوع") } }
-            )
+              );
+            },
+          ),
+        ),
+        if (_sending) const LinearProgressIndicator(),
+        if (_error != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+          ),
+        if (_showStickers)
+          Container(
+            width: double.infinity,
+            color: const Color(0xFFF6F6F6),
+            padding: const EdgeInsets.all(8),
+            child: Wrap(children: [
+              for (final s in _stickers)
+                InkWell(
+                  onTap: () {
+                    setState(() => _showStickers = false);
+                    _guard(() => Repo.send(chat.id, me, 'sticker', text: s));
+                  },
+                  child: Padding(padding: const EdgeInsets.all(8), child: Text(s, style: const TextStyle(fontSize: 32))),
+                ),
+            ]),
+          ),
+        SafeArea(
+          top: false,
+          child: _recording
+              ? Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(children: [
+                    const Icon(Icons.fiber_manual_record, color: Colors.red),
+                    const SizedBox(width: 8),
+                    const Expanded(child: Text('جاري التسجيل... اضغط ■ للإرسال')),
+                    IconButton(icon: const Icon(Icons.stop, color: kGreen), onPressed: _stopRec),
+                  ]),
+                )
+              : Row(children: [
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.attach_file),
+                    onSelected: (v) {
+                      if (v == 'image') _pickImage();
+                      if (v == 'gif') _pickGif();
+                      if (v == 'video') _pickVideo();
+                    },
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(value: 'image', child: Text('صورة')),
+                      PopupMenuItem(value: 'gif', child: Text('GIF')),
+                      PopupMenuItem(value: 'video', child: Text('فيديو')),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.emoji_emotions_outlined),
+                    onPressed: () => setState(() => _showStickers = !_showStickers),
+                  ),
+                  Expanded(
+                    child: TextField(
+                      controller: _text,
+                      minLines: 1,
+                      maxLines: 4,
+                      onChanged: (_) => setState(() {}),
+                      decoration: InputDecoration(
+                        hintText: 'اكتب رسالة',
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
+                      ),
+                    ),
+                  ),
+                  if (_text.text.trim().isEmpty)
+                    IconButton(icon: const Icon(Icons.mic, color: kGreen), onPressed: _startRec)
+                  else
+                    IconButton(icon: const Icon(Icons.send, color: kGreen), onPressed: _sendText),
+                ]),
+        ),
+      ]),
+    );
+  }
+}
+
+class _Bubble extends StatelessWidget {
+  final Msg msg;
+  final bool mine, group;
+  final UserProfile? sender;
+  const _Bubble({required this.msg, required this.mine, required this.group, required this.sender});
+
+  @override
+  Widget build(BuildContext context) {
+    final senderRow = (group && !mine)
+        ? Row(mainAxisSize: MainAxisSize.min, children: [
+            Text(msg.senderName, style: const TextStyle(color: kGreen, fontSize: 12, fontWeight: FontWeight.w600)),
+            const SizedBox(width: 3),
+            VerifiedBadge(sender, size: 14),
+          ])
+        : null;
+
+    if (msg.type == 'sticker') {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [if (senderRow != null) senderRow, Text(msg.text, style: const TextStyle(fontSize: 56))],
+        ),
+      );
+    }
+
+    Widget content;
+    switch (msg.type) {
+      case 'image':
+      case 'gif':
+        content = ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Image.network(
+            msg.url,
+            fit: BoxFit.cover,
+            loadingBuilder: (c, child, p) => p == null
+                ? child
+                : const SizedBox(height: 120, child: Center(child: CircularProgressIndicator())),
+            errorBuilder: (c, e, s) => const Text('تعذر تحميل الصورة'),
+          ),
+        );
+        break;
+      case 'video':
+        content = InkWell(
+          onTap: () => launchUrl(Uri.parse(msg.url), mode: LaunchMode.externalApplication),
+          child: const Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(Icons.play_circle_fill, color: kGreen, size: 40),
+            SizedBox(width: 8),
+            Text('تشغيل الفيديو'),
+          ]),
+        );
+        break;
+      case 'voice':
+        content = _VoiceBubble(url: msg.url);
+        break;
+      default:
+        content = Text(msg.text);
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 3),
+      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: mine ? const Color(0xFFDDEFD9) : const Color(0xFFF1F1F1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [if (senderRow != null) senderRow, content],
+      ),
+    );
+  }
+}
+
+class _VoiceBubble extends StatefulWidget {
+  final String url;
+  const _VoiceBubble({required this.url});
+  @override
+  State<_VoiceBubble> createState() => _VoiceBubbleState();
+}
+
+class _VoiceBubbleState extends State<_VoiceBubble> {
+  final _player = AudioPlayer();
+  bool _playing = false;
+  StreamSubscription? _s1, _s2;
+
+  @override
+  void initState() {
+    super.initState();
+    _s1 = _player.onPlayerComplete.listen((_) {
+      if (mounted) setState(() => _playing = false);
+    });
+    _s2 = _player.onPlayerStateChanged.listen((s) {
+      if (mounted) setState(() => _playing = s == PlayerState.playing);
+    });
+  }
+
+  @override
+  void dispose() {
+    _s1?.cancel();
+    _s2?.cancel();
+    _player.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      IconButton(
+        icon: Icon(_playing ? Icons.pause : Icons.play_arrow, color: kGreen),
+        onPressed: () async {
+          if (_playing) {
+            await _player.pause();
+          } else if (_player.state == PlayerState.paused) {
+            await _player.resume();
+          } else {
+            await _player.play(UrlSource(widget.url));
+          }
         },
-        bottomBar = {
-            Column(Modifier.navigationBarsPadding().imePadding()) {
-                if (sending) LinearProgressIndicator(Modifier.fillMaxWidth())
-                error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 16.dp)) }
-
-                if (showStickers) {
-                    FlowRow(Modifier.fillMaxWidth().background(Color(0xFFF6F6F6)).padding(8.dp)) {
-                        STICKERS.forEach { s ->
-                            Text(s, fontSize = 32.sp, modifier = Modifier.clickable {
-                                showStickers = false
-                                safe { Repo.send(chat.id, me, "sticker", text = s) }
-                            }.padding(8.dp))
-                        }
-                    }
-                }
-
-                if (recorder != null) {
-                    Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.FiberManualRecord, null, tint = Color.Red)
-                        Spacer(Modifier.width(8.dp))
-                        Text("جاري التسجيل... اضغط ■ للإرسال", Modifier.weight(1f))
-                        IconButton(onClick = { stopRec() }) { Icon(Icons.Filled.Stop, "إرسال", tint = LymonGreen) }
-                    }
-                } else {
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Box {
-                            IconButton(onClick = { attachMenu = true }) { Icon(Icons.Filled.AttachFile, "إرفاق") }
-                            DropdownMenu(expanded = attachMenu, onDismissRequest = { attachMenu = false }) {
-                                DropdownMenuItem(text = { Text("صورة" ) }, leadingIcon = { Icon(Icons.Filled.Image, null) },
-                                    onClick = { pick("image", "image/*") })
-                                DropdownMenuItem(text = { Text("GIF") }, leadingIcon = { Icon(Icons.Filled.Gif, null) },
-                                    onClick = { pick("gif", "image/gif") })
-                                DropdownMenuItem(text = { Text("فيديو") }, leadingIcon = { Icon(Icons.Filled.Videocam, null) },
-                                    onClick = { pick("video", "video/*") })
-                            }
-                        }
-                        IconButton(onClick = { showStickers = !showStickers }) { Icon(Icons.Filled.EmojiEmotions, "ملصقات") }
-                        OutlinedTextField(
-                            text, { text = it }, modifier = Modifier.weight(1f),
-                            placeholder = { Text("اكتب رسالة") }, maxLines = 4,
-                            shape = RoundedCornerShape(24.dp)
-                        )
-                        if (text.isBlank()) {
-                            IconButton(onClick = { micPermission.launch(Manifest.permission.RECORD_AUDIO) }) {
-                                Icon(Icons.Filled.Mic, "تسجيل صوتي", tint = LymonGreen)
-                            }
-                        } else {
-                            IconButton(onClick = {
-                                val t = text.trim(); text = ""
-                                safe { Repo.send(chat.id, me, "text", text = t) }
-                            }) { Icon(Icons.AutoMirrored.Filled.Send, "إرسال", tint = LymonGreen) }
-                        }
-                    }
-                }
-            }
-        }
-    ) { pad ->
-        LazyColumn(Modifier.padding(pad).fillMaxSize().padding(horizontal = 8.dp), state = listState) {
-            items(messages, key = { it.id }) { m ->
-                val mine = m.senderId == me.uid
-                Row(
-                    Modifier.fillMaxWidth().padding(vertical = 3.dp),
-                    horizontalArrangement = if (mine) Arrangement.End else Arrangement.Start
-                ) {
-                    if (m.type == "sticker") {
-                        Column {
-                            if (chat.group && !mine) SenderName(m, byId[m.senderId])
-                            Text(m.text, fontSize = 56.sp)
-                        }
-                    } else {
-                        Column(
-                            Modifier.widthIn(max = 280.dp).clip(RoundedCornerShape(16.dp))
-                                .background(if (mine) Color(0xFFDDEFD9) else Color(0xFFF1F1F1)).padding(10.dp)
-                        ) {
-                            if (chat.group && !mine) SenderName(m, byId[m.senderId])
-                            when (m.type) {
-                                "image", "gif" -> AsyncImage(
-                                    model = m.url, imageLoader = loader, contentDescription = null,
-                                    contentScale = ContentScale.FillWidth,
-                                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp))
-                                )
-                                "video" -> Row(
-                                    Modifier.clickable {
-                                        try {
-                                            ctx.startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(Uri.parse(m.url), "video/*"))
-                                        } catch (_: Exception) {}
-                                    }.padding(4.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(Icons.Filled.PlayCircle, null, tint = LymonGreen, modifier = Modifier.size(40.dp))
-                                    Spacer(Modifier.width(8.dp)); Text("تشغيل الفيديو")
-                                }
-                                "voice" -> VoiceBubble(m.url)
-                                else -> Text(m.text)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+      ),
+      const Text('🎤 رسالة صوتية'),
+    ]);
+  }
 }
 
-@Composable
-private fun SenderName(m: Message, profile: UserProfile?) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(m.senderName, style = MaterialTheme.typography.labelMedium, color = LymonGreen)
-        Spacer(Modifier.width(3.dp)); BadgeIcon(profile, 14.dp)
-    }
-}
+===== FILE: android/app/src/main/AndroidManifest.xml (أضف فقط هذي الأسطر) =====
+<!-- داخل <manifest> وقبل <application> -->
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+<queries>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="https" />
+    </intent>
+</queries>
+<!-- وغيّر android:label في <application> إلى "Lymon chat" -->
 
-@Composable
-private fun VoiceBubble(url: String) {
-    var playing by remember { mutableStateOf(false) }
-    var prepared by remember { mutableStateOf(false) }
-    val player = remember { MediaPlayer() }
-    DisposableEffect(url) { onDispose { try { player.release() } catch (_: Exception) {} } }
+===== FILE: android/settings.gradle.kts (أضف داخل plugins { }) =====
+id("com.google.gms.google-services") version "4.4.2" apply false
 
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = {
-            try {
-                if (playing) { player.pause(); playing = false }
-                else if (prepared) { player.start(); playing = true }
-                else {
-                    player.setDataSource(url)
-                    player.setOnPreparedListener { prepared = true; it.start(); playing = true }
-                    player.setOnCompletionListener { playing = false; it.seekTo(0) }
-                    player.prepareAsync()
-                }
-            } catch (_: Exception) { playing = false }
-        }) {
-            Icon(if (playing) Icons.Filled.Pause else Icons.Filled.PlayArrow, "تشغيل", tint = LymonGreen)
-        }
-        Text("🎤 رسالة صوتية")
-    }
-}
+===== FILE: android/app/build.gradle.kts =====
+// 1) داخل plugins { } أضف:
+id("com.google.gms.google-services")
+// 2) داخل defaultConfig { } غيّر minSdk إلى:
+minSdk = 23
+
+===== FILE: android/app/google-services.json =====
+(نزّله من Firebase Console وحطه هنا — خاص بمشروعك)
 
 ===== (ليس ملف مشروع) الصقه في Firebase > Firestore > Rules ثم Publish =====
 rules_version = '2';
